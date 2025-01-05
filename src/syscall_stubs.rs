@@ -4,6 +4,7 @@ use crate::get_invoke_context;
 
 use std::mem::transmute;
 use std::sync::Arc;
+use std::sync::Once;
 
 use solana_sdk::account_info::AccountInfo;
 use solana_sdk::entrypoint::SUCCESS;
@@ -12,12 +13,21 @@ use solana_sdk::instruction::InstructionError;
 use solana_sdk::program_error::ProgramError;
 use solana_sdk::program_error::UNSUPPORTED_SYSVAR;
 use solana_sdk::program_stubs;
+use solana_sdk::program_stubs::set_syscall_stubs;
 use solana_sdk::pubkey::Pubkey;
 use solana_sdk::stable_layout::stable_instruction::StableInstruction;
 use solana_sdk::sysvar::Sysvar;
 
 use solana_program_runtime::stable_log;
 use solana_program_runtime::timings::ExecuteTimings;
+
+static ONCE: Once = Once::new();
+
+pub fn set_stubs_v2() {
+    ONCE.call_once(|| {
+        set_syscall_stubs(Box::new(TridentSyscallStubs {}));
+    });
+}
 
 pub struct TridentSyscallStubs;
 
